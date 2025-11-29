@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(page_title="Dashboard Asset Management", page_icon="👷‍♂️", layout="wide")
-
 st.title("👷‍♂️ Asset Management Weekly Activity")
 
 # Load data dari Google Sheets
-SHEET_ID = "1R1UYHVGMFNNWaalVO5RQwVJbMPYigr23Pl6R9A4-VrE"
-GID = "944388157"  # sesuai sheet yang kamu kirim
+SHEET_ID = "1UCyov9SZzwCzruemj7eUCFpc_ONV9du3fio00K_JHtI"
+GID = "467533562"
 url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
 
 @st.cache_data
@@ -16,24 +15,55 @@ def load_data():
 
 df = load_data()
 
-# Preview data
-st.subheader("📋 Data Kegiatan")
-st.dataframe(df)
+# =========================
+# FILTER SECTION
+# =========================
+st.sidebar.header("🔎 Filter Data")
 
-# Summary Section
+weeks = sorted(df["Week"].unique())
+week_filter = st.sidebar.multiselect("Pilih Week:", weeks, default=weeks)
+
+bus = sorted(df["BU"].unique())
+bu_filter = st.sidebar.multiselect("Pilih BU:", bus, default=bus)
+
+# Apply filters
+filtered_df = df[
+    df["Week"].isin(week_filter) &
+    df["BU"].isin(bu_filter)
+]
+
+# =========================
+# PREVIEW DATA
+# =========================
+st.subheader("📋 Data Kegiatan (Filtered)")
+st.dataframe(filtered_df, height=400)
+
+# =========================
+# SUMMARY (Top Metrics)
+# =========================
 st.subheader("📊 Ringkasan")
+
 col1, col2, col3 = st.columns(3)
+col1.metric("Total Baris Data", len(filtered_df))
+col2.metric("Total BU Terpilih", filtered_df["BU"].nunique())
+col3.metric("Total Jenis Kegiatan", filtered_df["Kegiatan"].nunique())
 
-col1.metric("Jumlah Kegiatan", len(df))
-if "BU" in df.columns:
-    col2.metric("Jumlah BU", df["BU"].nunique())
-else:
-    col2.metric("Jumlah BU", "-")
+# =========================
+# OVERVIEW JUMLAH PER KEGIATAN
+# =========================
+st.subheader("📈 Overview Jumlah per Kegiatan")
 
-if "Departemen" in df.columns:
-    col3.metric("Jumlah Departemen", df["Departemen"].nunique())
-else:
-    col3.metric("Jumlah Departemen", "-")
+# Agregasi Jumlah
+sum_kegiatan = (
+    filtered_df.groupby("Kegiatan")["Jumlah"]
+    .sum()
+    .reset_index()
+    .sort_values("Jumlah", ascending=False)
+)
+
+st.dataframe(sum_kegiatan)
+
+# Chart
+st.bar_chart(sum_kegiatan.set_index("Kegiatan"))
 
 st.success("Dashboard tersambung ke Google Sheets! 🚀")
-

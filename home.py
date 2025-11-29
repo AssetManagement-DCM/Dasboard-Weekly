@@ -15,7 +15,7 @@ def load_data():
     return pd.read_csv(url)
 
 df = load_data()
-data = df[,3:6]
+data = df.iloc[:, 3:6]
 # ======================================
 # FILTERS
 # ======================================

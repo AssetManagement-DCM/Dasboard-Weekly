@@ -32,26 +32,14 @@ filtered_df = data[
     data["BU"].isin(bu_filter)
 ]
 
-# ======================================
-# DATA TABLE
-# ======================================
-st.subheader("📋 Data Kegiatan (Filtered)")
-st.dataframe(filtered_df, height=400)
-
-# ======================================
-# SUMMARY
-# ======================================
-st.subheader("📊 Ringkasan")
+st.subheader("📊 Weekly Overview")
 
 col1, col2, col3 = st.columns(3)
-col1.metric("Total Baris Data", len(filtered_df))
-col2.metric("Total BU Terpilih", filtered_df["BU"].nunique())
+col1.metric("Total Kegiatan", len(filtered_df))
+col2.metric("Total BU", filtered_df["BU"].nunique())
 col3.metric("Total Jenis Kegiatan", filtered_df["Kegiatan"].nunique())
 
-# ======================================
-# OVERVIEW PER KEGIATAN
-# ======================================
-st.subheader("📈 Overview Jumlah per Kegiatan")
+st.subheader("📈 Jumlah per Kegiatan")
 
 sum_kegiatan = (
     filtered_df.groupby("Kegiatan")["Jumlah"]
@@ -63,5 +51,3 @@ sum_kegiatan = (
 st.dataframe(sum_kegiatan)
 
 st.bar_chart(sum_kegiatan.set_index("Kegiatan"))
-
-st.success("Dashboard tersambung menggunakan sheet name! 🚀")

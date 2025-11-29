@@ -4,10 +4,7 @@ import pandas as pd
 st.set_page_config(page_title="Dashboard Asset Management", page_icon="👷‍♂️", layout="wide")
 st.title("👷‍♂️ Asset Management Weekly Activity")
 
-SHEET_ID = "1UCyov9SZzwCzruemj7eUCFpc_ONV9du3fio00K_JHtI"
-SHEET_NAME = "Data"
-
-url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+url = f"https://docs.google.com/spreadsheets/d/1UCyov9SZzwCzruemj7eUCFpc_ONV9du3fio00K_JHtI/edit?gid=467533562#gid=467533562"
 
 @st.cache_data
 def load_data():

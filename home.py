@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Dashboard Safety", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Dashboard Asset Management", page_icon="👷‍♂️", layout="wide")
 
-st.title("🛡️ Safety Activity Dashboard")
-st.write("Data Realtime dari Google Sheets")
+st.title("👷‍♂️ Asset Management Weekly Activity")
 
 # Load data dari Google Sheets
 SHEET_ID = "1R1UYHVGMFNNWaalVO5RQwVJbMPYigr23Pl6R9A4-VrE"
@@ -37,3 +36,4 @@ else:
     col3.metric("Jumlah Departemen", "-")
 
 st.success("Dashboard tersambung ke Google Sheets! 🚀")
+

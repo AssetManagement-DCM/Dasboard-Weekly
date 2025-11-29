@@ -53,7 +53,6 @@ col3.metric("Total Jenis Kegiatan", filtered_df["Kegiatan"].nunique())
 # =========================
 st.subheader("📈 Overview Jumlah per Kegiatan")
 
-# Agregasi Jumlah
 sum_kegiatan = (
     filtered_df.groupby("Kegiatan")["Jumlah"]
     .sum()
@@ -63,7 +62,6 @@ sum_kegiatan = (
 
 st.dataframe(sum_kegiatan)
 
-# Chart
 st.bar_chart(sum_kegiatan.set_index("Kegiatan"))
 
-st.success("Dashboard tersambung ke Google Sheets! 🚀")
+st.success("Dashboard tersambung ke Google Sheets terbaru! 🚀")

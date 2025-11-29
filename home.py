@@ -15,21 +15,21 @@ def load_data():
     return pd.read_csv(url)
 
 df = load_data()
-
+data = df[,3:6]
 # ======================================
 # FILTERS
 # ======================================
 st.sidebar.header("🔎 Filter Data")
 
-weeks = sorted(df["Week"].dropna().unique())
+weeks = sorted(data["Week"].dropna().unique())
 week_filter = st.sidebar.multiselect("Pilih Week:", weeks, default=weeks)
 
-bus = sorted(df["BU"].dropna().unique())
+bus = sorted(data["BU"].dropna().unique())
 bu_filter = st.sidebar.multiselect("Pilih BU:", bus, default=bus)
 
-filtered_df = df[
-    df["Week"].isin(week_filter) &
-    df["BU"].isin(bu_filter)
+filtered_df = data[
+    data["Week"].isin(week_filter) &
+    data["BU"].isin(bu_filter)
 ]
 
 # ======================================

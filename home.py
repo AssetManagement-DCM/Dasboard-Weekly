@@ -14,10 +14,8 @@ def load_data():
     return pd.read_csv(url)
 
 df = load_data()
+st.dataframe(df)
 
-# =========================
-# FILTER SECTION
-# =========================
 st.sidebar.header("🔎 Filter Data")
 
 weeks = sorted(df["Week"].unique())
@@ -37,31 +35,3 @@ filtered_df = df[
 # =========================
 st.subheader("📋 Data Kegiatan (Filtered)")
 st.dataframe(filtered_df, height=400)
-
-# =========================
-# SUMMARY (Top Metrics)
-# =========================
-st.subheader("📊 Ringkasan")
-
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Baris Data", len(filtered_df))
-col2.metric("Total BU Terpilih", filtered_df["BU"].nunique())
-col3.metric("Total Jenis Kegiatan", filtered_df["Kegiatan"].nunique())
-
-# =========================
-# OVERVIEW JUMLAH PER KEGIATAN
-# =========================
-st.subheader("📈 Overview Jumlah per Kegiatan")
-
-sum_kegiatan = (
-    filtered_df.groupby("Kegiatan")["Jumlah"]
-    .sum()
-    .reset_index()
-    .sort_values("Jumlah", ascending=False)
-)
-
-st.dataframe(sum_kegiatan)
-
-st.bar_chart(sum_kegiatan.set_index("Kegiatan"))
-
-st.success("Dashboard tersambung ke Google Sheets terbaru! 🚀")

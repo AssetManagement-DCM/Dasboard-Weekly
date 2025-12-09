@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import matplotlib
 from datetime import date
 from streamlit.components.v1 import html
 

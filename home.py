@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from streamlit_navigation_bar import st_navbar
 from datetime import date
 from streamlit.components.v1 import html
 from streamlit_option_menu import option_menu

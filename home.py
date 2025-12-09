@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import matplotlib
+from streamlit_navigation_bar import st_navbar
 from datetime import date
 from streamlit.components.v1 import html
+from streamlit_option_menu import option_menu
+import matplotlib
+
 
 st.set_page_config(
     page_title="Dashboard Asset Management",

@@ -3,8 +3,6 @@ import pandas as pd
 import altair as alt
 from datetime import date
 from streamlit.components.v1 import html
-from streamlit_option_menu import option_menu
-
 
 st.set_page_config(
     page_title="Dashboard Asset Management",

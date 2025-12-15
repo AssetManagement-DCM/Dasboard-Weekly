@@ -6,6 +6,8 @@ from datetime import date
 from streamlit.components.v1 import html
 from streamlit_option_menu import option_menu
 import matplotlib
+import gspread
+from google.oauth2 import service_account
 
 
 st.set_page_config(
@@ -13,6 +15,50 @@ st.set_page_config(
     page_icon="👷‍♂️",
     layout="wide"
 )
+
+USERNAME = st.secrets["auth"]["username"]
+PASSWORD = st.secrets["auth"]["password"]
+
+def login_page():
+    st.markdown("""
+    <style>
+    .st-emotion-cache-tn0cau {
+        max-width: 350px;
+        margin: auto;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        text-align: center;
+        background-color : black;
+        color : white;
+    }
+    .st-emotion-cache-2dxdgx {
+        color: black;}
+    .st-emotion-cache-y5ykoy{
+        color:white;}
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("## 🔐 Login")
+
+    user = st.text_input("Username")
+    pw = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if user == USERNAME and pw == PASSWORD:
+            st.session_state["logged_in"] = True
+            st.rerun()
+        else:
+            st.error("❌ Username atau password salah")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+
+if not st.session_state["logged_in"]:
+    login_page()
+    st.stop()
 
 st.markdown("""
     <style>
@@ -29,22 +75,61 @@ st.markdown("""
 st.image("abc.png")
 
 SHEET_ID = "1UCyov9SZzwCzruemj7eUCFpc_ONV9du3fio00K_JHtI"
-SHEET_NAME = "Data"
-SHEET_NAME_MANPOWER = "Manpower"
+SHEET_DATA = "Data"
+SHEET_MANPOWER = "Manpower"
 
-manpowerUrl = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME_MANPOWER}"
-all_data = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 
-@st.cache_data
-def load_data():
-    return pd.read_csv(all_data)
-df = load_data()
+# ======================
+# AUTH GOOGLE
+# ======================
+@st.cache_resource
+def get_gspread_client():
+    creds = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=SCOPES
+    )
+    return gspread.authorize(creds)
+
+gc = get_gspread_client()
+
+# ======================
+# HELPER: LOAD SHEET + FIX HEADER
+# ======================
+@st.cache_data(ttl=300)  # auto refresh tiap 5 menit
+def load_sheet(sheet_name: str) -> pd.DataFrame:
+    sh = gc.open_by_key(SHEET_ID)
+    ws = sh.worksheet(sheet_name)
+
+    values = ws.get_all_values()
+    headers = values[0]
+    rows = values[1:]
+
+    # ---- FIX HEADER DUPLICATE ----
+    seen = {}
+    unique_headers = []
+    for h in headers:
+        if h in seen:
+            seen[h] += 1
+            unique_headers.append(f"{h}_{seen[h]}")
+        else:
+            seen[h] = 0
+            unique_headers.append(h)
+
+    df = pd.DataFrame(rows, columns=unique_headers)
+    return df
+
+# ======================
+# LOAD DATA
+# ======================
+df = load_sheet(SHEET_DATA)
+df_manpower = load_sheet(SHEET_MANPOWER)
+
+# contoh slicing kayak kode awal kamu
 data = df.iloc[:, 3:7]
-
-@st.cache_data
-def load_data_manpower():
-    return pd.read_csv(manpowerUrl)
-df_manpower = load_data_manpower()
 
 weeks = sorted(data["Week"].dropna().unique())
 st.markdown("""
@@ -88,11 +173,9 @@ with tab1:
     with b:
         week_filter = st.multiselect("Pilih Week", weeks, default=[default_week],width=250)
         filtered_df = data[
-        data["Week"].isin(week_filter)
-    ]
+        data["Week"].isin(week_filter)]
     st.markdown("""
         <style>
-
         .metric-card {
             background: black;
             padding : 10px;
@@ -101,7 +184,6 @@ with tab1:
             box-shadow: 0 3px 8px rgba(0,0,0,0.08);
             text-align: left;
         }
-
         .metric-card h4 {
             margin: 0;
             margin-left : 20px;
@@ -111,7 +193,6 @@ with tab1:
             font-weight: 600;
             color: white;
         }
-
         .metric-card .value {
             margin-top : -100px;
             margin-left : 20px;
@@ -121,7 +202,19 @@ with tab1:
             margin-top: 0px;
             color: white;
         }
-
+        .st-emotion-cache-18rkgye{
+            background-color: white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            diplay: inline-block;
+        }
+        .st-emotion-cache-1dary7h{
+            background-color: white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+        .marks {
+            background-color: white;
+        }
         </style>
         """, unsafe_allow_html=True)
 
@@ -130,7 +223,14 @@ with tab1:
         .sum()
         .reset_index()
     )
-
+    sum_kegiatan["Jumlah"] = (
+        pd.to_numeric(
+            sum_kegiatan["Jumlah"],
+            errors="coerce"
+        )
+        .fillna(0)
+        .astype(int)
+    )
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -194,16 +294,28 @@ with tab1:
             text=alt.Text("Jumlah:Q", format="0")
         )
     )
+    final_chart = (
+        (chart + labels)
+        .properties(height=400)
+        .configure_view(
+            fill="white"          # area plot
+        )
+        .configure(
+            background="white"    # seluruh canvas
+        )
+        .configure_legend(
+            fillColor="white"
+        )
+    )
 
     # CONDITIONAL FORMATTING
     def highlight_offsite(row):
         if row["On/Off Site"].strip().lower() == "off-site":
             return ["background-color: #CECECE"] * len(row)
-        return [""] * len(row)
+        return ["background-color: white"] * len(row)
 
     df_manpower = df_manpower.copy()
-    df_manpower.index = df_manpower.index + 1  # start index from 1
-
+    df_manpower = df_manpower.reset_index(drop=True)   
     styled_df = (
         df_manpower.style
         .apply(highlight_offsite, axis=1)
@@ -213,7 +325,7 @@ with tab1:
             "text-align": "center",
             "padding": "6px",
             "font-size": "12px",
-        })  
+        })
     )
 
     st.divider()
@@ -221,15 +333,13 @@ with tab1:
 
     with col1:
         st.markdown("<h3 style='text-align: center;'>👬🏼 Manpowers</h3>", unsafe_allow_html=True)
-        st.dataframe(styled_df)
-
+        st.dataframe(styled_df, hide_index=True)
     with col2:
         container2 = st.container()
         container2.markdown("<div class='card-container'>", unsafe_allow_html=True)
 
         st.markdown("<h3 style='text-align: center;'>📈 Jumlah per Kegiatan</h3>", unsafe_allow_html=True)
-        st.altair_chart((chart + labels).properties(height=400), use_container_width=True)
-
+        st.altair_chart(final_chart, use_container_width=True)
         container2.markdown("</div>", unsafe_allow_html=True)
 with tab2:
     st.markdown("""
@@ -279,7 +389,8 @@ with tab2:
             training.app()
     st.markdown('</div>', unsafe_allow_html=True)
 
-
+if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
 st.divider()
 st.markdown(
     """

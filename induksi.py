@@ -51,7 +51,7 @@ def app():
         week_filter = st.multiselect(
             "Pilih Week",
             weeks,
-            default=[default_week],
+            default="Week 48",
             max_selections=None
         )
 
@@ -94,7 +94,10 @@ def app():
                 margin-top: 0px;
                 color: white;
             }
-
+            .st-emotion-cache-ncvwpv {
+                background-color : white; box-shadow: 0 3px 8px rgba(0,0,0,0.08);}
+            .st-emotion-cache-165te23 {
+                background-color : white;box-shadow: 0 3px 8px rgba(0,0,0,0.08);}
             </style>
             """, unsafe_allow_html=True)
     with x1:
@@ -149,7 +152,7 @@ def app():
         pivot.index = pivot.index + 1
         st.dataframe(pivot, height=400)
     with col2:
-        possible_bus = ["DCM", "HPAL", "ONC"]
+        possible_bus = ["DCM", "HPAL", "ONC", "Lainnya"]
 
         available_bus = [bu for bu in possible_bus if bu in pivot.columns]
 
@@ -170,7 +173,8 @@ def app():
                 colors = {
                     "DCM": "#134f5c",
                     "HPAL": "#2f9a7f",
-                    "ONC": "#31681a"
+                    "ONC": "#31681a",
+                    "Lainnya": "#ff9900"
                 }
                 color_list = [colors[bu] for bu in labels]
 
@@ -191,8 +195,6 @@ def app():
                     ax.axis("equal")
 
                     st.pyplot(fig)
-
-
 
     st.divider()
 

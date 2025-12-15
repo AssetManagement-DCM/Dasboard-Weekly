@@ -15,6 +15,7 @@ st.set_page_config(
     page_icon="👷‍♂️",
     layout="wide"
 )
+st.write(st.secrets["gcp_service_account"]["client_email"])
 
 USERNAME = st.secrets["auth"]["username"]
 PASSWORD = st.secrets["auth"]["password"]
